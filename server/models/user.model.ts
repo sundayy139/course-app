@@ -25,11 +25,11 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
   {
     name: {
       type: String,
-      require: [true, "Please enter your name"],
+      required: [true, "Please enter your name"],
     },
     email: {
       type: String,
-      require: [true, "Please enter your email"],
+      required: [true, "Please enter your email"],
       validate: {
         validator: function (value: string) {
           return emailRegexPatern.test(value);
@@ -40,7 +40,6 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
     },
     password: {
       type: String,
-      require: [true, "Please enter your password"],
       minlength: [8, "Password must be at least 8 characters"],
       select: false,
     },
@@ -77,12 +76,16 @@ userSchema.pre<IUser>("save", async function (next) {
 
 // sign access token
 userSchema.methods.SignAccessToken = function () {
-  return JWT.sign({ id: this._id }, process.env.ACCESS_TOKEN || "");
+  return JWT.sign({ id: this._id }, process.env.ACCESS_TOKEN || "", {
+    expiresIn: "5m",
+  });
 };
 
 // sign refresh token
 userSchema.methods.SignRefreshToken = function () {
-  return JWT.sign({ id: this._id }, process.env.REFRESH_TOKEN || "");
+  return JWT.sign({ id: this._id }, process.env.REFRESH_TOKEN || "", {
+    expiresIn: "3d",
+  });
 };
 
 // compare password
@@ -92,6 +95,6 @@ userSchema.methods.comparePassword = async function (
   return await bcrypt.compare(enterdPassword, this.password);
 };
 
-const userModel: Model<IUser> = mongoose.model("User", userSchema);
+const UserModel: Model<IUser> = mongoose.model("User", userSchema);
 
-export default userModel;
+export default UserModel;
